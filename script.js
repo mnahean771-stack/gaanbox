@@ -48,13 +48,13 @@ $$(".nav-item").forEach((item) => {
 
     if (view === "discover") { showView("discover"); }
     else if (view === "search") { showView("results"); resultsTitle.textContent = "Search";
-      resultsList.innerHTML = '<p class="empty">উপরের বক্সে গানের নাম লিখে সার্চ করুন।</p>'; $("#searchInput").focus(); }
+      resultsList.innerHTML = '<p class="empty">Type a song name in the box above and search.</p>'; $("#searchInput").focus(); }
     else if (view === "trending") { runSearch("trending songs this week", "Trending"); }
     else if (view === "playlist") { runSearch("top hits playlist", "Playlist"); }
-    else if (view === "favorites") { renderList(favorites, "Favorites ❤️", "এখনো কোনো ফেভারিট নেই। গানের পাশের হার্টে ট্যাপ করুন।"); }
-    else if (view === "history") { renderList(history, "History", "এখনো কোনো গান শোনা হয়নি।"); }
+    else if (view === "favorites") { renderList(favorites, "Favorites ❤️", "No favorites yet. Tap the heart next to a song."); }
+    else if (view === "history") { renderList(history, "History", "You have not played any song yet."); }
     else if (view === "about") { showView("results"); resultsTitle.textContent = "About";
-      resultsList.innerHTML = '<p class="about-box">Nahean Music — Nihal-এর নিজের মিউজিক অ্যাপ। YouTube থেকে যেকোনো গান সার্চ করে শুনুন।</p>'; }
+      resultsList.innerHTML = '<p class="about-box">GaanBox - a personal music app by Nihal. Search and play any song from YouTube.</p>'; }
   });
 });
 
@@ -94,13 +94,13 @@ function decode(s) { const t = document.createElement("textarea"); t.innerHTML =
 
 async function runSearch(query, title) {
   if (typeof YT_API_KEY === "undefined" || YT_API_KEY === "YOUR_API_KEY_HERE") {
-    showView("results"); resultsTitle.textContent = "Setup দরকার";
-    resultsList.innerHTML = '<p class="empty">config.js ফাইলে আপনার API key বসান।</p>'; return;
+    showView("results"); resultsTitle.textContent = "Setup needed";
+    resultsList.innerHTML = '<p class="empty">Put your API key in the config.js file.</p>'; return;
   }
   showView("results");
   resultsTitle.textContent = title || "Results";
   resultsList.innerHTML = "";
-  statusEl.textContent = "খোঁজা হচ্ছে...";
+  statusEl.textContent = "Searching...";
   try {
     const url = "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=20&q="
       + encodeURIComponent(query) + "&key=" + YT_API_KEY;
@@ -113,10 +113,10 @@ async function runSearch(query, title) {
       artist: decode(it.snippet.channelTitle),
       thumb: (it.snippet.thumbnails.medium || it.snippet.thumbnails.default).url,
     }));
-    statusEl.textContent = songs.length ? "" : "কিছু পাওয়া যায়নি।";
-    renderList(songs, title || "Results", "কিছু পাওয়া যায়নি।");
+    statusEl.textContent = songs.length ? "" : "No results found.";
+    renderList(songs, title || "Results", "No results found.");
   } catch (err) {
-    statusEl.textContent = "সমস্যা: " + err.message;
+    statusEl.textContent = "Error: " + err.message;
   }
 }
 
@@ -178,12 +178,12 @@ function playFromList(songs, i) { queue = songs.slice(); renderQueue(); playInde
 // ---------- YouTube Player ----------
 window.onYouTubeIframeAPIReady = function () {
   player = new YT.Player("ytPlayer", {
-    height: "200", width: "200",
-    playerVars: { playsinline: 1, controls: 0, rel: 0 },
+    height: "120", width: "213",
+    playerVars: { playsinline: 1, controls: 0, rel: 0, origin: location.origin },
     events: {
       onReady: () => { playerReady = true; if (pendingVideo) { player.loadVideoById(pendingVideo); pendingVideo = null; } },
       onStateChange: onPlayerState,
-      onError: () => { statusEl.textContent = "এই গানটা এখানে চালানো যাচ্ছে না, পরেরটা চালাচ্ছি..."; setTimeout(next, 1200); },
+      onError: () => { statusEl.textContent = "This song cannot be played here, skipping to the next..."; setTimeout(next, 1200); },
     },
   });
 };
@@ -231,7 +231,8 @@ function startRot() { if (!rotTimer) rotTimer = setInterval(() => { rotation += 
 function stopRot() { clearInterval(rotTimer); rotTimer = null; }
 
 function togglePlay() {
-  if (!playerReady || !currentSong) return;
+  if (!playerReady) { statusEl.textContent = "Player is loading, try again in a moment."; return; }
+  if (!currentSong) { statusEl.textContent = "Pick a song first."; return; }
   const st = player.getPlayerState();
   if (st === YT.PlayerState.PLAYING) player.pauseVideo(); else player.playVideo();
 }
