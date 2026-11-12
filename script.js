@@ -178,7 +178,7 @@ function playFromList(songs, i) { queue = songs.slice(); renderQueue(); playInde
 // ---------- YouTube Player ----------
 window.onYouTubeIframeAPIReady = function () {
   player = new YT.Player("ytPlayer", {
-    height: "135", width: "240",
+    height: "144", width: "256",
     playerVars: { playsinline: 1, controls: 0, rel: 0, fs: 0, modestbranding: 1 },
     events: {
       onReady: () => { playerReady = true; if (pendingVideo) { player.loadVideoById(pendingVideo); player.playVideo(); pendingVideo = null; } },

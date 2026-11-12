@@ -934,17 +934,87 @@ main {
 .music-player input[type=range] { width: 100%; }
 
 
-/* ===== audio-only mode: hide video, show album cover ===== */
+
+/* ===== audio-only mode (video stays ON-SCREEN, tiny, behind everything) ===== */
 .yt-wrap {
   position: fixed !important;
-  left: -9999px !important;
-  top: 0 !important;
-  width: 240px !important;
-  height: 135px !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: auto !important;
+  top: auto !important;
+  width: 256px !important;
+  height: 144px !important;
   min-height: 0 !important;
   margin: 0 !important;
-  opacity: 0.01;
-  pointer-events: none;
+  opacity: 0.02 !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+  aspect-ratio: auto !important;
+  border-radius: 0 !important;
+}
+.yt-wrap iframe, .yt-wrap #ytPlayer {
+  width: 256px !important;
+  height: 144px !important;
+  position: static !important;
 }
 .album-cover { display: block !important; margin-bottom: 6px; }
 .album-cover img { max-width: 160px; width: 160px; }
+
+
+/* ===== mobile fit fix: nothing may exceed screen width ===== */
+html, body { max-width: 100vw; overflow-x: hidden; }
+main, .content, .left-content, .right-content { max-width: 100%; min-width: 0; box-sizing: border-box; }
+.right-content { overflow-x: hidden !important; }
+.music-player {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  overflow: hidden !important;
+}
+.music-player > * { max-width: 100%; box-sizing: border-box; }
+.music-player h2, .music-player p { width: 100%; word-break: break-word; }
+.music-player input[type=range] { width: 100% !important; margin: 0; }
+.time-row { width: 100%; display: flex; justify-content: space-between; }
+.recommended-songs, .song-container { max-width: 100%; box-sizing: border-box; }
+
+
+/* ===== FINAL MOBILE GRID FIX: columns may not grow beyond screen ===== */
+@media (max-width: 750px) {
+  main {
+    grid-template-columns: 56px minmax(0, 1fr) !important;
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    margin: 12px !important;
+    box-sizing: border-box;
+  }
+  .content {
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden;
+  }
+  .left-content, .right-content {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+  .right-content {
+    display: flex !important;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 12px 30px !important;
+  }
+  .music-player {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px 12px 18px !important;
+  }
+  #progress { width: 100% !important; }
+  .controls { display: flex; justify-content: center; align-items: center; width: 100%; }
+  .controls button { margin: 0 10px !important; }
+  .song-container { max-width: 100%; }
+}
