@@ -178,12 +178,12 @@ function playFromList(songs, i) { queue = songs.slice(); renderQueue(); playInde
 // ---------- YouTube Player ----------
 window.onYouTubeIframeAPIReady = function () {
   player = new YT.Player("ytPlayer", {
-    height: "120", width: "213",
-    playerVars: { playsinline: 1, controls: 0, rel: 0, origin: location.origin },
+    height: "200", width: "356",
+    playerVars: { playsinline: 1, controls: 0, rel: 0, fs: 0, modestbranding: 1 },
     events: {
-      onReady: () => { playerReady = true; if (pendingVideo) { player.loadVideoById(pendingVideo); pendingVideo = null; } },
+      onReady: () => { playerReady = true; if (pendingVideo) { player.loadVideoById(pendingVideo); player.playVideo(); pendingVideo = null; } },
       onStateChange: onPlayerState,
-      onError: () => { statusEl.textContent = "This song cannot be played here, skipping to the next..."; setTimeout(next, 1200); },
+      onError: (e) => { statusEl.textContent = "Cannot play (error " + e.data + "), skipping to next..."; setTimeout(next, 2500); },
     },
   });
 };
@@ -198,7 +198,7 @@ function playIndex(i) {
   history = [currentSong, ...history.filter((s) => s.id !== currentSong.id)].slice(0, 50);
   store.set("nm_hist", history);
   updateFavBtn(); renderQueue();
-  if (playerReady) player.loadVideoById(currentSong.id); else pendingVideo = currentSong.id;
+  if (playerReady) { player.loadVideoById(currentSong.id); player.playVideo(); } else pendingVideo = currentSong.id;
   if ("mediaSession" in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata({ title: currentSong.title, artist: currentSong.artist, artwork: [{ src: currentSong.thumb }] });
     navigator.mediaSession.setActionHandler("nexttrack", next);
@@ -234,7 +234,8 @@ function togglePlay() {
   if (!playerReady) { statusEl.textContent = "Player is loading, try again in a moment."; return; }
   if (!currentSong) { statusEl.textContent = "Pick a song first."; return; }
   const st = player.getPlayerState();
-  if (st === YT.PlayerState.PLAYING) player.pauseVideo(); else player.playVideo();
+  if (st === YT.PlayerState.PLAYING) player.pauseVideo();
+  else { player.playVideo(); setTimeout(() => { if (player.getPlayerState() !== YT.PlayerState.PLAYING && player.getPlayerState() !== YT.PlayerState.BUFFERING) statusEl.textContent = "Tap the video once to start playback."; }, 1500); }
 }
 function next() { if (queue.length) playIndex((queueIndex + 1) % queue.length); }
 function prev() { if (queue.length) playIndex((queueIndex - 1 + queue.length) % queue.length); }
